@@ -4,6 +4,7 @@ import logging
 import typing
 import uuid
 
+import psycopg2
 import aiopg
 from aiopg.sa.engine import APGCompiler_psycopg2
 from sqlalchemy.dialects.postgresql.psycopg2 import PGDialect_psycopg2
@@ -12,6 +13,7 @@ from sqlalchemy.engine.result import ResultMetaData, RowProxy
 from sqlalchemy.sql import ClauseElement
 from sqlalchemy.types import TypeEngine
 
+from databases import exceptions
 from databases.core import DatabaseURL
 from databases.interfaces import ConnectionBackend, DatabaseBackend, TransactionBackend
 
@@ -123,6 +125,22 @@ class AiopgConnection(ConnectionBackend):
                 RowProxy(metadata, row, metadata._processors, metadata._keymap)
                 for row in rows
             ]
+        except psycopg2.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except psycopg2.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except psycopg2.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except psycopg2.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except psycopg2.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except psycopg2.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except psycopg2.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except psycopg2.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             cursor.close()
 
@@ -137,6 +155,22 @@ class AiopgConnection(ConnectionBackend):
                 return None
             metadata = ResultMetaData(context, cursor.description)
             return RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except psycopg2.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except psycopg2.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except psycopg2.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except psycopg2.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except psycopg2.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except psycopg2.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except psycopg2.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except psycopg2.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             cursor.close()
 
@@ -147,6 +181,22 @@ class AiopgConnection(ConnectionBackend):
         try:
             await cursor.execute(query, args)
             return cursor.lastrowid
+        except psycopg2.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except psycopg2.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except psycopg2.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except psycopg2.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except psycopg2.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except psycopg2.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except psycopg2.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except psycopg2.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             cursor.close()
 
@@ -157,6 +207,22 @@ class AiopgConnection(ConnectionBackend):
             for single_query in queries:
                 single_query, args, context = self._compile(single_query)
                 await cursor.execute(single_query, args)
+        except psycopg2.InterfaceError as error:
+            raise exceptions.InterfaceError(str(single_query), None, error) from error
+        except psycopg2.DataError as error:
+            raise exceptions.DataError(str(single_query), None, error)
+        except psycopg2.OperationalError as error:
+            raise exceptions.OperationalError(str(single_query), None, error) from error
+        except psycopg2.IntegrityError as error:
+            raise exceptions.IntegrityError(str(single_query), None, error) from error
+        except psycopg2.InternalError as error:
+            raise exceptions.InternalError(str(single_query), None, error) from error
+        except psycopg2.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(single_query), None, error) from error
+        except psycopg2.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(single_query), None, error) from error
+        except psycopg2.DatabaseError as error:
+            raise exceptions.DatabaseError(str(single_query), None, error) from error
         finally:
             cursor.close()
 

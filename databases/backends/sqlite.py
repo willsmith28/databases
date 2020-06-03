@@ -3,12 +3,14 @@ import typing
 import uuid
 
 import aiosqlite
+import sqlite3
 from sqlalchemy.dialects.sqlite import pysqlite
 from sqlalchemy.engine.interfaces import Dialect, ExecutionContext
 from sqlalchemy.engine.result import ResultMetaData, RowProxy
 from sqlalchemy.sql import ClauseElement
 from sqlalchemy.types import TypeEngine
 
+from databases import exceptions
 from databases.core import LOG_EXTRA, DatabaseURL
 from databases.interfaces import ConnectionBackend, DatabaseBackend, TransactionBackend
 
@@ -89,24 +91,58 @@ class SQLiteConnection(ConnectionBackend):
         assert self._connection is not None, "Connection is not acquired"
         query, args, context = self._compile(query)
 
-        async with self._connection.execute(query, args) as cursor:
-            rows = await cursor.fetchall()
-            metadata = ResultMetaData(context, cursor.description)
-            return [
-                RowProxy(metadata, row, metadata._processors, metadata._keymap)
-                for row in rows
-            ]
+        try:
+            async with self._connection.execute(query, args) as cursor:
+                rows = await cursor.fetchall()
+                metadata = ResultMetaData(context, cursor.description)
+                return [
+                    RowProxy(metadata, row, metadata._processors, metadata._keymap)
+                    for row in rows
+                ]
+        except sqlite3.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except sqlite3.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except sqlite3.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except sqlite3.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except sqlite3.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except sqlite3.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except sqlite3.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except sqlite3.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
 
     async def fetch_one(self, query: ClauseElement) -> typing.Optional[typing.Mapping]:
         assert self._connection is not None, "Connection is not acquired"
         query, args, context = self._compile(query)
 
-        async with self._connection.execute(query, args) as cursor:
-            row = await cursor.fetchone()
-            if row is None:
-                return None
-            metadata = ResultMetaData(context, cursor.description)
-            return RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        try:
+            async with self._connection.execute(query, args) as cursor:
+                row = await cursor.fetchone()
+                if row is None:
+                    return None
+                metadata = ResultMetaData(context, cursor.description)
+                return RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except sqlite3.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except sqlite3.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except sqlite3.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except sqlite3.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except sqlite3.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except sqlite3.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except sqlite3.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except sqlite3.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
 
     async def execute(self, query: ClauseElement) -> typing.Any:
         assert self._connection is not None, "Connection is not acquired"
@@ -117,6 +153,22 @@ class SQLiteConnection(ConnectionBackend):
             if cursor.lastrowid == 0:
                 return cursor.rowcount
             return cursor.lastrowid
+        except sqlite3.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except sqlite3.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except sqlite3.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except sqlite3.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except sqlite3.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except sqlite3.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except sqlite3.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except sqlite3.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             await cursor.close()
 

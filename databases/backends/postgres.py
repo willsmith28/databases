@@ -9,6 +9,7 @@ from sqlalchemy.sql import ClauseElement
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.types import TypeEngine
 
+from databases import exceptions
 from databases.core import LOG_EXTRA, DatabaseURL
 from databases.interfaces import ConnectionBackend, DatabaseBackend, TransactionBackend
 
@@ -149,7 +150,24 @@ class PostgresConnection(ConnectionBackend):
     async def fetch_all(self, query: ClauseElement) -> typing.List[typing.Mapping]:
         assert self._connection is not None, "Connection is not acquired"
         query, args, result_columns = self._compile(query)
-        rows = await self._connection.fetch(query, *args)
+        try:
+            rows = await self._connection.fetch(query, *args)
+        except asyncpg.IntegrityConstraintViolationError as error:
+            raise exceptions.IntegrityError(str(query),None, error) from error
+        except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except asyncpg.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query),None, error) from error
+        except asyncpg.DataError as error:
+            raise exceptions.DataError(str(query),None, error) from error
+        except asyncpg.SyntaxOrAccessError as error:
+            raise exceptions.ProgrammingError(str(query),None, error) from error
+        except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+            raise exceptions.OperationalError(str(query),None, error) from error
+        except asyncpg.FeatureNotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except asyncpg.PostgresError as error:
+            raise exceptions.DatabaseError(str(query),None, error) from error
         dialect = self._dialect
         column_maps = self._create_column_maps(result_columns)
         return [Record(row, result_columns, dialect, column_maps) for row in rows]
@@ -157,7 +175,24 @@ class PostgresConnection(ConnectionBackend):
     async def fetch_one(self, query: ClauseElement) -> typing.Optional[typing.Mapping]:
         assert self._connection is not None, "Connection is not acquired"
         query, args, result_columns = self._compile(query)
-        row = await self._connection.fetchrow(query, *args)
+        try:
+            row = await self._connection.fetchrow(query, *args)
+        except asyncpg.IntegrityConstraintViolationError as error:
+            raise exceptions.IntegrityError(str(query),None, error) from error
+        except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except asyncpg.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query),None, error) from error
+        except asyncpg.DataError as error:
+            raise exceptions.DataError(str(query),None, error) from error
+        except asyncpg.SyntaxOrAccessError as error:
+            raise exceptions.ProgrammingError(str(query),None, error) from error
+        except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+            raise exceptions.OperationalError(str(query),None, error) from error
+        except asyncpg.FeatureNotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except asyncpg.PostgresError as error:
+            raise exceptions.DatabaseError(str(query),None, error) from error
         if row is None:
             return None
         return Record(
@@ -172,12 +207,47 @@ class PostgresConnection(ConnectionBackend):
     ) -> typing.Any:
         assert self._connection is not None, "Connection is not acquired"
         query, args, _ = self._compile(query)
-        return await self._connection.fetchval(query, *args, column=column)
+        try:
+            return await self._connection.fetchval(query, *args, column=column)
+        except asyncpg.IntegrityConstraintViolationError as error:
+            raise exceptions.IntegrityError(str(query),None, error) from error
+        except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except asyncpg.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query),None, error) from error
+        except asyncpg.DataError as error:
+            raise exceptions.DataError(str(query),None, error) from error
+        except asyncpg.SyntaxOrAccessError as error:
+            raise exceptions.ProgrammingError(str(query),None, error) from error
+        except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+            raise exceptions.OperationalError(str(query),None, error) from error
+        except asyncpg.FeatureNotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except asyncpg.PostgresError as error:
+            raise exceptions.DatabaseError(str(query),None, error) from error
 
     async def execute(self, query: ClauseElement) -> typing.Any:
         assert self._connection is not None, "Connection is not acquired"
         query, args, result_columns = self._compile(query)
-        return await self._connection.fetchval(query, *args)
+        try:
+            return await self._connection.fetchval(query, *args)
+        except asyncpg.IntegrityConstraintViolationError as error:
+            raise exceptions.IntegrityError(str(query),None, error) from error
+        except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except asyncpg.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query),None, error) from error
+        except asyncpg.DataError as error:
+            raise exceptions.DataError(str(query),None, error) from error
+        except asyncpg.SyntaxOrAccessError as error:
+            raise exceptions.ProgrammingError(str(query),None, error) from error
+        except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+            raise exceptions.OperationalError(str(query),None, error) from error
+        except asyncpg.FeatureNotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except asyncpg.PostgresError as error:
+            raise exceptions.DatabaseError(str(query),None, error) from error
+
 
     async def execute_many(self, queries: typing.List[ClauseElement]) -> None:
         assert self._connection is not None, "Connection is not acquired"
@@ -186,7 +256,24 @@ class PostgresConnection(ConnectionBackend):
         # using the same prepared statement.
         for single_query in queries:
             single_query, args, result_columns = self._compile(single_query)
-            await self._connection.execute(single_query, *args)
+            try:
+                await self._connection.execute(single_query, *args)
+            except asyncpg.IntegrityConstraintViolationError as error:
+                raise exceptions.IntegrityError(str(single_query),None, error) from error
+            except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+                raise exceptions.InternalError(str(single_query), None, error) from error
+            except asyncpg.InterfaceError as error:
+                raise exceptions.InterfaceError(str(single_query),None, error) from error
+            except asyncpg.DataError as error:
+                raise exceptions.DataError(str(single_query),None, error) from error
+            except asyncpg.SyntaxOrAccessError as error:
+                raise exceptions.ProgrammingError(str(single_query),None, error) from error
+            except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+                raise exceptions.OperationalError(str(single_query),None, error) from error
+            except asyncpg.FeatureNotSupportedError as error:
+                raise exceptions.NotSupportedError(str(single_query), None, error) from error
+            except asyncpg.PostgresError as error:
+                raise exceptions.DatabaseError(str(single_query),None, error) from error
 
     async def iterate(
         self, query: ClauseElement

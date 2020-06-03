@@ -7,7 +7,7 @@ import os
 import pytest
 import sqlalchemy
 
-from databases import Database, DatabaseURL
+from databases import Database, DatabaseURL, exceptions
 
 assert "TEST_DATABASE_URLS" in os.environ, "TEST_DATABASE_URLS is not set."
 
@@ -68,6 +68,15 @@ prices = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("price", sqlalchemy.Numeric(precision=30, scale=20)),
+)
+
+# Used to test Exceptions
+comments = sqlalchemy.Table(
+    "comments",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column('article_id', sqlalchemy.ForeignKey('articles.id'), nullable=False),
+    sqlalchemy.Column("text", sqlalchemy.String(length=100)),
 )
 
 
@@ -925,3 +934,17 @@ async def test_column_names(database_url, select_query):
             assert sorted(results[0].keys()) == ["completed", "id", "text"]
             assert results[0]["text"] == "example1"
             assert results[0]["completed"] == True
+
+
+@pytest.mark.parametrize("database_url", DATABASE_URLS)
+@async_adapter
+async def test_throws_integrity_error(database_url):
+    """
+    Test that the SQLAlchemy Integrity error is thrown
+    """
+    async with Database(database_url) as database:
+        async with database.transaction(force_rollback=True):
+            query = comments.insert()
+            values = {'text': 'example1', 'article_id': None}
+            with pytest.raises(exceptions.IntegrityError):
+                await database.execute(query=query, values=values)

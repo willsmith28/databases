@@ -3,6 +3,7 @@ import logging
 import typing
 import uuid
 
+from pymysql import err
 import aiomysql
 from sqlalchemy.dialects.mysql import pymysql
 from sqlalchemy.engine.interfaces import Dialect, ExecutionContext
@@ -10,6 +11,7 @@ from sqlalchemy.engine.result import ResultMetaData, RowProxy
 from sqlalchemy.sql import ClauseElement
 from sqlalchemy.types import TypeEngine
 
+from databases import exceptions
 from databases.core import LOG_EXTRA, DatabaseURL
 from databases.interfaces import ConnectionBackend, DatabaseBackend, TransactionBackend
 
@@ -108,6 +110,22 @@ class MySQLConnection(ConnectionBackend):
                 RowProxy(metadata, row, metadata._processors, metadata._keymap)
                 for row in rows
             ]
+        except err.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except err.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except err.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except err.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except err.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except err.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except err.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except err.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             await cursor.close()
 
@@ -122,6 +140,22 @@ class MySQLConnection(ConnectionBackend):
                 return None
             metadata = ResultMetaData(context, cursor.description)
             return RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except err.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except err.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except err.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except err.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except err.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except err.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except err.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except err.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             await cursor.close()
 
@@ -134,6 +168,22 @@ class MySQLConnection(ConnectionBackend):
             if cursor.lastrowid == 0:
                 return cursor.rowcount
             return cursor.lastrowid
+        except err.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except err.DataError as error:
+            raise exceptions.DataError(str(query), None, error)
+        except err.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except err.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except err.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except err.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except err.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except err.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             await cursor.close()
 
@@ -144,6 +194,22 @@ class MySQLConnection(ConnectionBackend):
             for single_query in queries:
                 single_query, args, context = self._compile(single_query)
                 await cursor.execute(single_query, args)
+        except err.InterfaceError as error:
+            raise exceptions.InterfaceError(str(single_query), None, error) from error
+        except err.DataError as error:
+            raise exceptions.DataError(str(single_query), None, error)
+        except err.OperationalError as error:
+            raise exceptions.OperationalError(str(single_query), None, error) from error
+        except err.IntegrityError as error:
+            raise exceptions.IntegrityError(str(single_query), None, error) from error
+        except err.InternalError as error:
+            raise exceptions.InternalError(str(single_query), None, error) from error
+        except err.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(single_query), None, error) from error
+        except err.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(single_query), None, error) from error
+        except err.DatabaseError as error:
+            raise exceptions.DatabaseError(str(single_query), None, error) from error
         finally:
             await cursor.close()
 
