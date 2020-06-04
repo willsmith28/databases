@@ -183,10 +183,27 @@ class SQLiteConnection(ConnectionBackend):
         assert self._connection is not None, "Connection is not acquired"
         query, args, context = self._compile(query)
         cursor = await self._connection.cursor()
-        async with self._connection.execute(query, args) as cursor:
-            metadata = ResultMetaData(context, cursor.description)
-            async for row in cursor:
-                yield RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        try:
+            async with self._connection.execute(query, args) as cursor:
+                metadata = ResultMetaData(context, cursor.description)
+                async for row in cursor:
+                    yield RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except sqlite3.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except sqlite3.DataError as error:
+            raise exceptions.DataError(str(query), None, error) from error
+        except sqlite3.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except sqlite3.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except sqlite3.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except sqlite3.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except sqlite3.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except sqlite3.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
 
     def transaction(self) -> TransactionBackend:
         return SQLiteTransaction(self)

@@ -281,8 +281,25 @@ class PostgresConnection(ConnectionBackend):
         assert self._connection is not None, "Connection is not acquired"
         query, args, result_columns = self._compile(query)
         column_maps = self._create_column_maps(result_columns)
-        async for row in self._connection.cursor(query, *args):
-            yield Record(row, result_columns, self._dialect, column_maps)
+        try:
+            async for row in self._connection.cursor(query, *args):
+                yield Record(row, result_columns, self._dialect, column_maps)
+        except asyncpg.IntegrityConstraintViolationError as error:
+            raise exceptions.IntegrityError(str(query),None, error) from error
+        except (asyncpg.InvalidTransactionStateError, asyncpg.InvalidCursorStateError) as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except asyncpg.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query),None, error) from error
+        except asyncpg.DataError as error:
+            raise exceptions.DataError(str(query),None, error) from error
+        except asyncpg.SyntaxOrAccessError as error:
+            raise exceptions.ProgrammingError(str(query),None, error) from error
+        except (asyncpg.PostgresConnectionError, asyncpg.InsufficientResourcesError, asyncpg.ProgramLimitExceededError) as error:
+            raise exceptions.OperationalError(str(query),None, error) from error
+        except asyncpg.FeatureNotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except asyncpg.PostgresError as error:
+            raise exceptions.DatabaseError(str(query),None, error) from error
 
     def transaction(self) -> TransactionBackend:
         return PostgresTransaction(connection=self)

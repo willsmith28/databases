@@ -224,6 +224,22 @@ class MySQLConnection(ConnectionBackend):
             metadata = ResultMetaData(context, cursor.description)
             async for row in cursor:
                 yield RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except err.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except err.DataError as error:
+            raise exceptions.DataError(str(query), None, error) from error
+        except err.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except err.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except err.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except err.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except err.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except err.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             await cursor.close()
 

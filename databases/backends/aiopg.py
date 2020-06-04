@@ -237,6 +237,22 @@ class AiopgConnection(ConnectionBackend):
             metadata = ResultMetaData(context, cursor.description)
             async for row in cursor:
                 yield RowProxy(metadata, row, metadata._processors, metadata._keymap)
+        except psycopg2.InterfaceError as error:
+            raise exceptions.InterfaceError(str(query), None, error) from error
+        except psycopg2.DataError as error:
+            raise exceptions.DataError(str(query), None, error) from error
+        except psycopg2.OperationalError as error:
+            raise exceptions.OperationalError(str(query), None, error) from error
+        except psycopg2.IntegrityError as error:
+            raise exceptions.IntegrityError(str(query), None, error) from error
+        except psycopg2.InternalError as error:
+            raise exceptions.InternalError(str(query), None, error) from error
+        except psycopg2.ProgrammingError as error:
+            raise exceptions.ProgrammingError(str(query), None, error) from error
+        except psycopg2.NotSupportedError as error:
+            raise exceptions.NotSupportedError(str(query), None, error) from error
+        except psycopg2.DatabaseError as error:
+            raise exceptions.DatabaseError(str(query), None, error) from error
         finally:
             cursor.close()
 
