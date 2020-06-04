@@ -128,7 +128,7 @@ class AiopgConnection(ConnectionBackend):
         except psycopg2.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except psycopg2.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except psycopg2.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except psycopg2.IntegrityError as error:
@@ -158,7 +158,7 @@ class AiopgConnection(ConnectionBackend):
         except psycopg2.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except psycopg2.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except psycopg2.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except psycopg2.IntegrityError as error:
@@ -184,7 +184,7 @@ class AiopgConnection(ConnectionBackend):
         except psycopg2.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except psycopg2.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except psycopg2.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except psycopg2.IntegrityError as error:
@@ -210,7 +210,7 @@ class AiopgConnection(ConnectionBackend):
         except psycopg2.InterfaceError as error:
             raise exceptions.InterfaceError(str(single_query), None, error) from error
         except psycopg2.DataError as error:
-            raise exceptions.DataError(str(single_query), None, error)
+            raise exceptions.DataError(str(single_query), None, error) from error
         except psycopg2.OperationalError as error:
             raise exceptions.OperationalError(str(single_query), None, error) from error
         except psycopg2.IntegrityError as error:

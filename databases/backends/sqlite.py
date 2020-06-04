@@ -102,7 +102,7 @@ class SQLiteConnection(ConnectionBackend):
         except sqlite3.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except sqlite3.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except sqlite3.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except sqlite3.IntegrityError as error:
@@ -130,7 +130,7 @@ class SQLiteConnection(ConnectionBackend):
         except sqlite3.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except sqlite3.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except sqlite3.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except sqlite3.IntegrityError as error:
@@ -156,7 +156,7 @@ class SQLiteConnection(ConnectionBackend):
         except sqlite3.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except sqlite3.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except sqlite3.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except sqlite3.IntegrityError as error:

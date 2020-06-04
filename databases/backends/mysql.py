@@ -113,7 +113,7 @@ class MySQLConnection(ConnectionBackend):
         except err.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except err.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except err.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except err.IntegrityError as error:
@@ -143,7 +143,7 @@ class MySQLConnection(ConnectionBackend):
         except err.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except err.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except err.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except err.IntegrityError as error:
@@ -171,7 +171,7 @@ class MySQLConnection(ConnectionBackend):
         except err.InterfaceError as error:
             raise exceptions.InterfaceError(str(query), None, error) from error
         except err.DataError as error:
-            raise exceptions.DataError(str(query), None, error)
+            raise exceptions.DataError(str(query), None, error) from error
         except err.OperationalError as error:
             raise exceptions.OperationalError(str(query), None, error) from error
         except err.IntegrityError as error:
@@ -197,7 +197,7 @@ class MySQLConnection(ConnectionBackend):
         except err.InterfaceError as error:
             raise exceptions.InterfaceError(str(single_query), None, error) from error
         except err.DataError as error:
-            raise exceptions.DataError(str(single_query), None, error)
+            raise exceptions.DataError(str(single_query), None, error) from error
         except err.OperationalError as error:
             raise exceptions.OperationalError(str(single_query), None, error) from error
         except err.IntegrityError as error:
